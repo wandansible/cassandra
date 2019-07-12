@@ -1,0 +1,39 @@
+---
+- name: Import cassandra packaging GPG signing key
+  apt_key:
+    url: https://www.apache.org/dist/cassandra/KEYS
+    state: present
+
+- name: Add cassandra repository
+  apt_repository:
+    repo: "deb http://www.apache.org/dist/cassandra/debian {{ cassandra_series_version }} main"
+    state: present
+
+- name: Install cassandra packages
+  apt:
+    pkg:
+      - openjdk-8-jre-headless
+      - cassandra
+    state: present
+
+# Warn users that /etc/cassandra/cassandra.yaml is managed by ansible (even
+# though only some of the lines actually are).
+- name: Mark /etc/cassandra/cassandra.yaml as managed by ansible
+  lineinfile:
+    dest: /etc/cassandra/cassandra.yaml
+    line: "# Ansible managed"
+    state: present
+    insertbefore: BOF
+
+# the influxdb config file moves quickly, so just update the known issues
+- name: Configure /etc/cassandra/cassandra.yaml
+  lineinfile:
+    dest: /etc/cassandra/cassandra.yaml
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+      - { regexp: "^cluster_name:", line: "cluster_name: '{{ cassandra_cluster_name }}'" }
+      - { regexp: "^listen_address:", line: "listen_address: {{ cassandra_listen_address }}" }
+      - { regexp: "^rpc_address:", line: "rpc_address: {{ cassandra_rpc_address }}" }
+      - { regexp: "^rpc_port:", line: "rpc_port: {{ cassandra_rpc_port }}" }
+  notify: restart cassandra
