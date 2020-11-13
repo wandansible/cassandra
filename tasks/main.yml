@@ -31,7 +31,7 @@
     dest: /etc/cassandra/cassandra.yaml
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
-  with_items:
+  loop:
       - { regexp: "^cluster_name:", line: "cluster_name: '{{ cassandra_cluster_name }}'" }
       - { regexp: "^listen_address:", line: "listen_address: {{ cassandra_listen_address }}" }
       - { regexp: "^rpc_address:", line: "rpc_address: {{ cassandra_rpc_address }}" }
