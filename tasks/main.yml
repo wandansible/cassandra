@@ -36,4 +36,6 @@
       - { regexp: "^listen_address:", line: "listen_address: {{ cassandra_listen_address }}" }
       - { regexp: "^rpc_address:", line: "rpc_address: {{ cassandra_rpc_address }}" }
       - { regexp: "^rpc_port:", line: "rpc_port: {{ cassandra_rpc_port }}" }
+  loop_control:
+    label: "{{ item.line }}"
   notify: restart cassandra
