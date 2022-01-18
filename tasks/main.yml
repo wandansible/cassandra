@@ -6,7 +6,7 @@
 
 - name: Add cassandra repository
   apt_repository:
-    repo: "deb http://www.apache.org/dist/cassandra/debian {{ cassandra_series_version }} main"
+    repo: "deb https://www.apache.org/dist/cassandra/debian {{ cassandra_series_version }} main"
     state: present
 
 - name: Install cassandra packages
