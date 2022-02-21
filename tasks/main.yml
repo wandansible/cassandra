@@ -1,16 +1,33 @@
 ---
+- name: Remove old cassandra apt repository entry
+  ansible.builtin.apt_repository:
+    repo: deb https://www.apache.org/dist/cassandra/debian {{ cassandra_series_version }} main
+    update_cache: no
+    state: absent
+
+- name: Remove cassandra apt signing keys from default apt keyring
+  ansible.builtin.apt_key:
+    id: "{{ item }}"
+    keyring: /etc/apt/trusted.gpg
+    state: absent
+  loop: "{{ cassandra_apt_key_fingerprints }}"
+
 - name: Import cassandra packaging GPG signing key
-  apt_key:
+  ansible.builtin.apt_key:
     url: https://www.apache.org/dist/cassandra/KEYS
+    keyring: /usr/share/keyrings/cassandra.gpg
     state: present
 
 - name: Add cassandra repository
-  apt_repository:
-    repo: "deb https://www.apache.org/dist/cassandra/debian {{ cassandra_series_version }} main"
+  ansible.builtin.apt_repository:
+    repo: >-
+      deb [signed-by=/usr/share/keyrings/cassandra.gpg]
+      https://www.apache.org/dist/cassandra/debian
+      {{ cassandra_series_version }} main
     state: present
 
 - name: Install cassandra packages
-  apt:
+  ansible.builtin.apt:
     pkg:
       - openjdk-8-jre-headless
       - cassandra
@@ -19,7 +36,7 @@
 # Warn users that /etc/cassandra/cassandra.yaml is managed by ansible (even
 # though only some of the lines actually are).
 - name: Mark /etc/cassandra/cassandra.yaml as managed by ansible
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/cassandra/cassandra.yaml
     line: "# Ansible managed"
     state: present
@@ -27,15 +44,19 @@
 
 # the influxdb config file moves quickly, so just update the known issues
 - name: Configure /etc/cassandra/cassandra.yaml
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/cassandra/cassandra.yaml
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
   loop:
-      - { regexp: "^cluster_name:", line: "cluster_name: '{{ cassandra_cluster_name }}'" }
-      - { regexp: "^listen_address:", line: "listen_address: {{ cassandra_listen_address }}" }
-      - { regexp: "^rpc_address:", line: "rpc_address: {{ cassandra_rpc_address }}" }
-      - { regexp: "^rpc_port:", line: "rpc_port: {{ cassandra_rpc_port }}" }
+    - regexp: "^cluster_name:"
+      line: "cluster_name: '{{ cassandra_cluster_name }}'"
+    - regexp: "^listen_address:"
+      line: "listen_address: {{ cassandra_listen_address }}"
+    - regexp: "^rpc_address:"
+      line: "rpc_address: {{ cassandra_rpc_address }}"
+    - regexp: "^rpc_port:"
+      line: "rpc_port: {{ cassandra_rpc_port }}"
   loop_control:
     label: "{{ item.line }}"
   notify: restart cassandra

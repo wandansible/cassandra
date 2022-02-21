@@ -1,10 +1,10 @@
 ---
 - name: restart cassandra
-  service:
+  ansible.builtin.service:
     name: cassandra.service
     state: restarted
 
 - name: reload cassandra
-  service:
+  ansible.builtin.service:
     name: cassandra.service
     state: reloaded
