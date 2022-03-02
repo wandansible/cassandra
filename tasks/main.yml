@@ -1,8 +1,7 @@
 ---
 - name: Remove old cassandra apt repository entry
-  ansible.builtin.apt_repository:
-    repo: deb https://www.apache.org/dist/cassandra/debian {{ cassandra_series_version }} main
-    update_cache: no
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/www_apache_org_dist_cassandra_debian.list
     state: absent
 
 - name: Remove cassandra apt signing keys from default apt keyring
@@ -24,6 +23,7 @@
       deb [signed-by=/usr/share/keyrings/cassandra.gpg]
       https://www.apache.org/dist/cassandra/debian
       {{ cassandra_series_version }} main
+    filename: cassandra
     state: present
 
 - name: Install cassandra packages
