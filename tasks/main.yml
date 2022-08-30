@@ -1,5 +1,5 @@
 ---
-- name: Remove old cassandra apt repository entry
+- name: Remove old cassandra apt sources.list file
   ansible.builtin.file:
     path: /etc/apt/sources.list.d/www_apache_org_dist_cassandra_debian.list
     state: absent
@@ -11,16 +11,39 @@
     state: absent
   loop: "{{ cassandra_apt_key_fingerprints }}"
 
+- name: Remove old cassandra apt repository entry
+  ansible.builtin.apt_repository:
+    repo: >-
+      deb [signed-by=/usr/share/keyrings/cassandra.gpg]
+      https://www.apache.org/dist/cassandra/debian
+      {{ cassandra_series_version }} main
+    filename: cassandra
+    update_cache: no
+    state: absent
+
+- name: Remove cassandra apt signing key from /usr/share/keyrings
+  ansible.builtin.file:
+    path: /usr/share/keyrings/cassandra.gpg
+    state: absent
+
+- name: Create apt keyrings directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+
 - name: Import cassandra packaging GPG signing key
   ansible.builtin.apt_key:
     url: https://www.apache.org/dist/cassandra/KEYS
-    keyring: /usr/share/keyrings/cassandra.gpg
+    keyring: /etc/apt/keyrings/cassandra.gpg
     state: present
 
 - name: Add cassandra repository
   ansible.builtin.apt_repository:
     repo: >-
-      deb [signed-by=/usr/share/keyrings/cassandra.gpg]
+      deb [signed-by=/etc/apt/keyrings/cassandra.gpg]
       https://www.apache.org/dist/cassandra/debian
       {{ cassandra_series_version }} main
     filename: cassandra
