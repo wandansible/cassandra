@@ -1,0 +1,36 @@
+---
+argument_specs:
+  main:
+    short_description: Install and configure Apache Cassandra
+    options:
+      cassandra_series_version:
+        description: |
+          Cassandra version series to track, for available versions see:
+          https://cassandra.apache.org/doc/latest/cassandra/getting_started/installing.html#installing-the-debian-packages
+        type: str
+        default: 311x
+
+      cassandra_cluster_name:
+        description: Name of the cluster
+        type: str
+        default: Test Cluster
+
+      cassandra_listen_address:
+        description: Bind address
+        type: str
+        default: localhost
+
+      cassandra_rpc_address:
+        description: Listen address for RPC client connections
+        type: str
+        default: localhost
+
+      cassandra_rpc_port:
+        description: Listen port for RPC client connections
+        type: int
+        default: 9160
+
+      cassandra_apt_key_fingerprints:
+        description: Fingerprints for cassandra apt keys
+        type: list
+        elements: str
