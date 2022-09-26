@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Include wandansible.cassandra"
+      ansible.builtin.include_role:
+        name: "wandansible.cassandra"
